@@ -1,0 +1,273 @@
+:root {
+  --ink: #1c2430;
+  --muted: #5c6778;
+  --paper: #f4efe4;
+  --card: #fffdf8;
+  --line: #e4dccb;
+  --teal: #0f5c5c;
+  --teal-deep: #0a3f3f;
+  --gold: #c9842a;
+  --gold-soft: #f3e2c4;
+  --shadow: 0 18px 40px rgba(28, 36, 48, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top right, #f7e7c8 0, transparent 28%),
+    linear-gradient(180deg, #f7f3ea 0%, var(--paper) 100%);
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 20px 64px;
+}
+
+.hero {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-family: "Fraunces", serif;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.15;
+  max-width: 14ch;
+  margin-bottom: 12px;
+}
+
+.lede {
+  color: var(--muted);
+  max-width: 52ch;
+  line-height: 1.55;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: #f7f2e8;
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-btn {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  background: #fff;
+  color: var(--teal-deep);
+  box-shadow: 0 1px 4px rgba(28, 36, 48, 0.08);
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.unit-field {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.unit-field:focus-within {
+  border-color: var(--teal);
+}
+
+input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 1.4rem;
+  padding: 14px 16px;
+  background: transparent;
+  width: 100%;
+}
+
+.suffix {
+  padding: 0 16px 0 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.hint {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.tariff {
+  margin-top: 22px;
+}
+
+.tariff h2 {
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+#tariff-list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+#tariff-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f7f2e8;
+  font-size: 0.92rem;
+}
+
+#tariff-list li.active {
+  background: var(--gold-soft);
+  outline: 1px solid #e6c48a;
+}
+
+#tariff-list .rate {
+  font-weight: 600;
+  color: var(--teal-deep);
+}
+
+.empty {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.result-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.grand-total {
+  font-family: "Fraunces", serif;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  color: var(--teal-deep);
+  margin: 4px 0 10px;
+}
+
+.lifeline-note {
+  display: inline-block;
+  background: #e7f3ee;
+  color: var(--teal-deep);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.breakdown {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 18px;
+  font-size: 0.92rem;
+}
+
+.breakdown th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.breakdown td {
+  padding: 9px 6px;
+  border-bottom: 1px solid #f0eadc;
+}
+
+.breakdown td:nth-child(2),
+.breakdown td:nth-child(3),
+.breakdown td:nth-child(4),
+.breakdown th:nth-child(2),
+.breakdown th:nth-child(3),
+.breakdown th:nth-child(4) {
+  text-align: right;
+}
+
+.totals {
+  display: grid;
+  gap: 10px;
+}
+
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.totals .payable {
+  color: var(--ink);
+  font-weight: 700;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    max-width: none;
+  }
+}
