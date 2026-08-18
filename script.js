@@ -42,6 +42,13 @@ const grandTotalEl = document.getElementById("grand-total");
 const lifelineNote = document.getElementById("lifeline-note");
 const modeForwardBtn = document.getElementById("mode-forward");
 const modeReverseBtn = document.getElementById("mode-reverse");
+const tabCalculator = document.getElementById("tab-calculator");
+const tabHistory = document.getElementById("tab-history");
+const calculatorSection = document.getElementById("calculator-section");
+const historySection = document.getElementById("history-section");
+const historyBody = document.getElementById("history-body");
+const historyLoading = document.getElementById("history-loading");
+const historyEmpty = document.getElementById("history-empty");
 
 let mode = "forward";
 
@@ -248,5 +255,104 @@ function setMode(nextMode) {
 modeForwardBtn.addEventListener("click", () => setMode("forward"));
 modeReverseBtn.addEventListener("click", () => setMode("reverse"));
 amountInput.addEventListener("input", update);
+
+function setMainTab(tab) {
+  if (tab === "calculator") {
+    tabCalculator.classList.add("active");
+    tabHistory.classList.remove("active");
+    tabCalculator.setAttribute("aria-pressed", "true");
+    tabHistory.setAttribute("aria-pressed", "false");
+    calculatorSection.classList.remove("hidden");
+    historySection.classList.add("hidden");
+  } else {
+    tabCalculator.classList.remove("active");
+    tabHistory.classList.add("active");
+    tabCalculator.setAttribute("aria-pressed", "false");
+    tabHistory.setAttribute("aria-pressed", "true");
+    calculatorSection.classList.add("hidden");
+    historySection.classList.remove("hidden");
+    loadBills();
+  }
+}
+
+function parseBills(text) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  if (lines.length === 0) return [];
+
+  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const rows = [];
+
+  for (let i = 1; i < lines.length; i += 1) {
+    const values = lines[i].split(",").map((v) => v.trim());
+    if (values.length !== headers.length) continue;
+
+    const row = {};
+    headers.forEach((header, idx) => {
+      row[header] = values[idx];
+    });
+
+    rows.push({
+      year: row["year"],
+      month: row["month"],
+      previous: Number(row["previous reading"]),
+      present: Number(row["present reading"]),
+      total: Number(row["total reading"]),
+      bill: Number(row["bill(taka)"]),
+    });
+  }
+
+  return rows;
+}
+
+function renderHistory(bills) {
+  historyBody.innerHTML = bills
+    .map(
+      (bill) => `
+      <tr>
+        <td>${bill.year}</td>
+        <td>${bill.month}</td>
+        <td>${bill.previous}</td>
+        <td>${bill.present}</td>
+        <td>${bill.total}</td>
+        <td>${formatTaka(bill.bill)}</td>
+      </tr>
+    `
+    )
+    .join("");
+}
+
+const BILLS_TEXT = `Year, Month, Previous Reading, Present Reading, Total Reading, Bill(Taka)
+2026, July, 3562, 3286, 276, 2343
+2026, Jun, 3282, 3086, 196, 1730`;
+
+async function loadBills() {
+  if (historyBody.children.length > 0) return;
+
+  historyLoading.classList.remove("hidden");
+  historyEmpty.classList.add("hidden");
+
+  try {
+    const text = BILLS_TEXT;
+    const bills = parseBills(text);
+
+    historyLoading.classList.add("hidden");
+    if (bills.length === 0) {
+      historyEmpty.classList.remove("hidden");
+    } else {
+      renderHistory(bills);
+    }
+  } catch (err) {
+    historyLoading.classList.add("hidden");
+    historyEmpty.classList.remove("hidden");
+    historyEmpty.textContent = "Unable to load bills.";
+  }
+}
+
+tabCalculator.addEventListener("click", () => setMainTab("calculator"));
+tabHistory.addEventListener("click", () => setMainTab("history"));
 
 renderTariff();

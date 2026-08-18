@@ -24,7 +24,17 @@
       </header>
 
       <main class="layout">
-        <section class="card input-card">
+        <div class="main-tabs" role="tablist" aria-label="Main sections">
+          <button type="button" id="tab-calculator" class="main-tab active" aria-pressed="true">
+            Calculator
+          </button>
+          <button type="button" id="tab-history" class="main-tab" aria-pressed="false">
+            History
+          </button>
+        </div>
+
+        <section id="calculator-section" class="tab-content">
+          <section class="card input-card">
           <div class="mode-toggle" role="tablist" aria-label="Calculator mode">
             <button type="button" id="mode-forward" class="mode-btn active" aria-pressed="true">
               Units → Bill
@@ -96,7 +106,29 @@
             </dl>
           </div>
         </section>
-      </main>
+      </section>
+
+      <section id="history-section" class="tab-content hidden">
+        <section class="card history-card">
+          <h2>Past bills</h2>
+          <div id="history-loading" class="hidden">Loading bills...</div>
+          <div id="history-empty" class="empty hidden">No bills found.</div>
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Previous Reading</th>
+                <th>Present Reading</th>
+                <th>Total Reading</th>
+                <th>Bill (৳)</th>
+              </tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
+        </section>
+      </section>
+    </main>
     </div>
 
     <script src="script.js"></script>

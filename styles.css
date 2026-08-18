@@ -262,6 +262,68 @@ input {
   border-top: 1px dashed var(--line);
 }
 
+.tab-content {
+  grid-column: 1 / -1;
+}
+
+.main-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: #f7f2e8;
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  grid-column: 1 / -1;
+}
+
+.main-tab {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.main-tab.active {
+  background: #fff;
+  color: var(--teal-deep);
+  box-shadow: 0 1px 4px rgba(28, 36, 48, 0.08);
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 0.92rem;
+}
+
+.history-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-table td {
+  padding: 9px 6px;
+  border-bottom: 1px solid #f0eadc;
+}
+
+.history-table td:nth-child(n+3),
+.history-table th:nth-child(n+3) {
+  text-align: right;
+}
+
+.history-card h2 {
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
 @media (max-width: 800px) {
   .layout {
     grid-template-columns: 1fr;
