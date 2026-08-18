@@ -9,6 +9,9 @@ const SLABS = [
   { label: "401–600 units", from: 401, to: 600, rate: 15.01 },
 ];
 
+const HISTORY_LEDE =
+  "Meter history for the last 24 months: monthly bills, running total, and whether costs are rising or falling.";
+
 const COPY = {
   forward: {
     lede: "Enter monthly units (kWh) to see a slab-by-slab DPDC LT-A estimate, then 5% VAT on the energy charge.",
@@ -290,6 +293,7 @@ function setMainTab(tab) {
     tabHistory.setAttribute("aria-pressed", "false");
     calculatorSection.classList.remove("hidden");
     historySection.classList.add("hidden");
+    document.getElementById("lede").textContent = COPY[mode].lede;
   } else {
     tabCalculator.classList.remove("active");
     tabHistory.classList.add("active");
@@ -297,6 +301,7 @@ function setMainTab(tab) {
     tabHistory.setAttribute("aria-pressed", "true");
     calculatorSection.classList.add("hidden");
     historySection.classList.remove("hidden");
+    document.getElementById("lede").textContent = HISTORY_LEDE;
     loadBills();
   }
 }
@@ -466,8 +471,8 @@ function renderChart(windowBills) {
   billChart.innerHTML = `
     <defs>
       <linearGradient id="sumFill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#0f5c5c" stop-opacity="0.18" />
-        <stop offset="100%" stop-color="#0f5c5c" stop-opacity="0" />
+        <stop offset="0%" stop-color="#7ee0d0" stop-opacity="0.28" />
+        <stop offset="100%" stop-color="#7ee0d0" stop-opacity="0" />
       </linearGradient>
     </defs>
     ${grid}

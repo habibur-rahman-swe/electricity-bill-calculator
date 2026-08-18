@@ -13,17 +13,19 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="page">
-      <header class="hero">
-        <p class="eyebrow">Dhaka Power Distribution Company</p>
-        <h1>Residential electricity bill calculator</h1>
-        <p class="lede" id="lede">
-          Enter monthly units (kWh) to see a slab-by-slab DPDC LT-A estimate,
-          then 5% VAT on the energy charge.
-        </p>
-      </header>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 36 36" aria-hidden="true">
+            <rect width="36" height="36" rx="10" fill="#0d3d3a" />
+            <path d="M20.5 6 10 19.5h8.2L16.4 30 26.8 16.2h-8.1L20.5 6z" fill="#f0c14b" />
+          </svg>
+          <div class="brand-copy">
+            <p class="eyebrow">Dhaka Power Distribution Company</p>
+            <h1>Residential electricity bill calculator</h1>
+          </div>
+        </div>
 
-      <main class="layout">
         <div class="main-tabs" role="tablist" aria-label="Main sections">
           <button type="button" id="tab-history" class="main-tab active" aria-pressed="true">
             History
@@ -32,7 +34,15 @@
             Calculator
           </button>
         </div>
+      </div>
+    </header>
 
+    <div class="page">
+      <p class="lede" id="lede">
+        Meter history for the last 24 months: monthly bills, running total, and whether costs are rising or falling.
+      </p>
+
+      <main class="layout">
         <section id="calculator-section" class="tab-content calculator-grid hidden">
           <section class="card input-card">
             <div class="mode-toggle" role="tablist" aria-label="Calculator mode">
