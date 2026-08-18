@@ -18,7 +18,8 @@ Residential electricity bill calculator for Dhaka Power Distribution Company (DP
 - Reverse mode: Bill → Estimated units
 - Lifeline tariff (৳4.63/unit) for ≤50 units
 - Progressive slab rates above 50 units
-- 5% VAT on energy charge
+- 5% VAT on energy charge + demand charge
+- Demand charge ৳84 (2 kW × ৳42/kW) on every bill
 - History tab reads `bills.js` (works when opening `index.html` as a file)
 - Last-24-month table plus monthly bars and a running-total (sum) line, with increase/decrease trend
 

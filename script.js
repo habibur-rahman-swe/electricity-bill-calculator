@@ -1,4 +1,7 @@
 const VAT_RATE = 0.05;
+const DEMAND_RATE = 42;
+const SANCTIONED_KW = 2;
+const DEMAND_CHARGE = DEMAND_RATE * SANCTIONED_KW;
 
 const SLABS = [
   { label: "0–50 units (Lifeline)", from: 0, to: 50, rate: 4.63, lifeline: true },
@@ -14,20 +17,20 @@ const HISTORY_LEDE =
 
 const COPY = {
   forward: {
-    lede: "Enter monthly units (kWh) to see a slab-by-slab DPDC LT-A estimate, then 5% VAT on the energy charge.",
+    lede: "Enter monthly units (kWh) to see a slab-by-slab DPDC LT-A estimate, plus the ৳84 demand charge and 5% VAT.",
     label: "Monthly consumption",
     suffix: "kWh",
     placeholder: "e.g. 185",
-    hint: "Lifeline (৳4.63) applies only if you use <strong>50 units or less</strong>. Above that, billing starts from the 0–75 slab.",
+    hint: "Lifeline (৳4.63) applies only if you use <strong>50 units or less</strong>. Above that, billing starts from the 0–75 slab. Demand charge is ৳84 for a 2 kW connection.",
     empty: "Type your units to see the bill breakdown.",
     resultLabel: "Estimated payable",
   },
   reverse: {
-    lede: "Enter the total bill (including 5% VAT) to estimate how many units that amount would cover.",
+    lede: "Enter the total bill (including demand charge and 5% VAT) to estimate how many units that amount would cover.",
     label: "Total bill (with VAT)",
     suffix: "৳",
     placeholder: "e.g. 1850",
-    hint: "VAT is removed first, then usage is worked backwards through the same residential slabs.",
+    hint: "VAT is removed first, then the ৳84 demand charge, then usage is worked backwards through the residential slabs.",
     empty: "Type the payable amount to estimate usage.",
     resultLabel: "Estimated usage",
   },
@@ -56,6 +59,7 @@ const emptyState = document.getElementById("empty-state");
 const result = document.getElementById("result");
 const slabBody = document.getElementById("slab-body");
 const energyChargeEl = document.getElementById("energy-charge");
+const demandChargeEl = document.getElementById("demand-charge");
 const vatAmountEl = document.getElementById("vat-amount");
 const payableEl = document.getElementById("payable");
 const grandTotalEl = document.getElementById("grand-total");
@@ -158,9 +162,10 @@ function calculateBill(units) {
 
 function payableFor(units) {
   const bill = calculateBill(units);
-  const vat = round(bill.energy * VAT_RATE);
-  const total = round(bill.energy + vat);
-  return { bill, vat, total };
+  const taxable = round(bill.energy + DEMAND_CHARGE);
+  const vat = round(taxable * VAT_RATE);
+  const total = round(taxable + vat);
+  return { bill, demand: DEMAND_CHARGE, vat, total };
 }
 
 function binarySearchUnits(target, lo, hi) {
@@ -185,6 +190,11 @@ function binarySearchUnits(target, lo, hi) {
 }
 
 function usageFromTotal(total) {
+  const minBill = payableFor(0).total;
+  if (total <= minBill) {
+    return { units: 0, gap: false };
+  }
+
   const at50 = payableFor(50).total;
   const at51 = payableFor(51).total;
 
@@ -207,7 +217,7 @@ function showEmpty() {
 }
 
 function renderBreakdown(units, note) {
-  const { bill, vat, total } = payableFor(units);
+  const { bill, demand, vat, total } = payableFor(units);
 
   emptyState.classList.add("hidden");
   result.classList.remove("hidden");
@@ -225,6 +235,7 @@ function renderBreakdown(units, note) {
     .join("");
 
   energyChargeEl.textContent = formatTaka(bill.energy);
+  demandChargeEl.textContent = formatTaka(demand);
   vatAmountEl.textContent = formatTaka(vat);
   payableEl.textContent = formatTaka(total);
 
@@ -383,7 +394,7 @@ function renderStats(windowBills, allCount) {
       <p class="stat-label">Average bill</p>
       <p class="stat-value">${formatTakaCompact(total / windowBills.length)}</p>
     </div>
-    <div class="stat">
+    <div class="stat latest">
       <p class="stat-label">Latest (${latest.label})</p>
       <p class="stat-value">${formatTakaCompact(latest.bill)}</p>
     </div>
@@ -451,9 +462,9 @@ function renderChart(windowBills) {
 
   const bars = barPoints
     .map(
-      (point) => `
-      <rect class="bar" x="${(point.x - barW / 2).toFixed(1)}" y="${point.y.toFixed(1)}" width="${barW}" height="${Math.max(point.h, 2).toFixed(1)}" rx="6">
-        <title>${point.label}: ${formatTaka(point.bill)}</title>
+      (point, index) => `
+      <rect class="bar${index === count - 1 ? " latest" : ""}" x="${(point.x - barW / 2).toFixed(1)}" y="${point.y.toFixed(1)}" width="${barW}" height="${Math.max(point.h, 2).toFixed(1)}" rx="6">
+        <title>${index === count - 1 ? "Latest · " : ""}${point.label}: ${formatTaka(point.bill)}</title>
       </rect>`
     )
     .join("");
@@ -462,7 +473,8 @@ function renderChart(windowBills) {
   const labels = barPoints
     .map((point, index) => {
       if (index % labelStep !== 0 && index !== count - 1) return "";
-      return `<text x="${point.x.toFixed(1)}" y="${height - 14}" class="axis-label center">${point.label}</text>`;
+      const latestClass = index === count - 1 ? " latest" : "";
+      return `<text x="${point.x.toFixed(1)}" y="${height - 14}" class="axis-label center${latestClass}">${point.label}</text>`;
     })
     .join("");
 
@@ -502,9 +514,13 @@ function renderHistory(bills) {
         changeCell = `<span class="change ${tone}">${sign}${formatTakaCompact(delta)} (${sign}${pct.toFixed(1)}%)</span>`;
       }
 
+      const isLatest = index === 0;
       return `
-      <tr>
-        <td><strong>${bill.label}</strong></td>
+      <tr class="${isLatest ? "latest" : ""}">
+        <td>
+          <strong>${bill.label}</strong>
+          ${isLatest ? '<span class="latest-tag">Latest</span>' : ""}
+        </td>
         <td>${bill.previous.toLocaleString("en-BD")}</td>
         <td>${bill.present.toLocaleString("en-BD")}</td>
         <td>${bill.total.toLocaleString("en-BD")}</td>

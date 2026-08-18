@@ -436,8 +436,42 @@ input {
   color: var(--up);
 }
 
-.stat-value.down {
-  color: var(--down);
+.stat.latest {
+  background: var(--gold-soft);
+  border-left-color: var(--gold);
+}
+
+.bar.latest {
+  fill: #ffe08a;
+}
+
+.axis-label.latest {
+  fill: #ffe08a;
+  font-weight: 700;
+}
+
+.history-table tbody tr.latest {
+  background: #fff6dc;
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.history-table tbody tr.latest:hover,
+.history-table tbody tr.latest:nth-child(even) {
+  background: #ffefc2;
+}
+
+.latest-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #3b2a08;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 .chart-wrap {
