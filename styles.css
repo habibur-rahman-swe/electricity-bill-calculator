@@ -1,6 +1,6 @@
 :root {
-  --ink: #15202b;
-  --muted: #5c6778;
+  --ink: #101820;
+  --muted: #3e4a57;
   --paper: #f3eee4;
   --card: #fffdf9;
   --line: #e6dcc8;
@@ -24,10 +24,12 @@ body {
   font-family: "DM Sans", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at 88% -10%, #f7e7c8 0, transparent 32%),
-    radial-gradient(circle at 8% 0%, #dceee8 0, transparent 26%),
+    radial-gradient(circle at 92% -18%, rgba(247, 231, 200, 0.45) 0, transparent 34%),
+    radial-gradient(circle at 6% 0%, rgba(220, 238, 232, 0.4) 0, transparent 24%),
     linear-gradient(180deg, #f8f4eb 0%, var(--paper) 100%);
   min-height: 100vh;
+  -webkit-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 .page {
@@ -41,27 +43,32 @@ body {
 }
 
 .eyebrow {
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--teal);
-  font-weight: 600;
+  color: var(--teal-deep);
+  font-weight: 700;
   margin-bottom: 10px;
 }
 
 h1 {
   font-family: "Fraunces", serif;
-  font-size: clamp(2rem, 4vw, 3.1rem);
-  font-weight: 600;
-  line-height: 1.15;
-  max-width: 16ch;
+  font-size: clamp(2.05rem, 4vw, 3.05rem);
+  font-weight: 700;
+  font-variation-settings: "SOFT" 0, "opsz" 72;
+  line-height: 1.18;
+  letter-spacing: -0.018em;
+  max-width: 22ch;
   margin-bottom: 12px;
+  color: #0c1218;
 }
 
 .lede {
-  color: var(--muted);
-  max-width: 54ch;
+  color: #2c3642;
+  max-width: 58ch;
   line-height: 1.55;
+  font-size: 1.05rem;
+  font-weight: 500;
 }
 
 .layout {
@@ -220,6 +227,8 @@ input {
 .grand-total {
   font-family: "Fraunces", serif;
   font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  font-variation-settings: "SOFT" 0, "opsz" 72;
   color: var(--teal-deep);
   margin: 4px 0 10px;
 }
@@ -362,6 +371,8 @@ input {
 .stat-value {
   font-family: "Fraunces", serif;
   font-size: 1.35rem;
+  font-weight: 700;
+  font-variation-settings: "SOFT" 0, "opsz" 36;
   color: var(--teal-deep);
 }
 
