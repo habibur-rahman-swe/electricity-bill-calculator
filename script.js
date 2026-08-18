@@ -541,3 +541,4 @@ tabCalculator.addEventListener("click", () => setMainTab("calculator"));
 tabHistory.addEventListener("click", () => setMainTab("history"));
 
 renderTariff();
+setMainTab("history");

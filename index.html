@@ -25,15 +25,15 @@
 
       <main class="layout">
         <div class="main-tabs" role="tablist" aria-label="Main sections">
-          <button type="button" id="tab-calculator" class="main-tab active" aria-pressed="true">
-            Calculator
-          </button>
-          <button type="button" id="tab-history" class="main-tab" aria-pressed="false">
+          <button type="button" id="tab-history" class="main-tab active" aria-pressed="true">
             History
+          </button>
+          <button type="button" id="tab-calculator" class="main-tab" aria-pressed="false">
+            Calculator
           </button>
         </div>
 
-        <section id="calculator-section" class="tab-content calculator-grid">
+        <section id="calculator-section" class="tab-content calculator-grid hidden">
           <section class="card input-card">
             <div class="mode-toggle" role="tablist" aria-label="Calculator mode">
               <button type="button" id="mode-forward" class="mode-btn active" aria-pressed="true">
@@ -53,7 +53,6 @@
                 step="any"
                 inputmode="decimal"
                 placeholder="e.g. 185"
-                autofocus
               />
               <span class="suffix" id="input-suffix">kWh</span>
             </div>
@@ -108,7 +107,7 @@
           </section>
         </section>
 
-        <section id="history-section" class="tab-content hidden">
+        <section id="history-section" class="tab-content">
           <div class="history-layout">
             <section class="card insight-card">
               <div class="insight-header">
