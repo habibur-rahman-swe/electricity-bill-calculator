@@ -521,8 +521,8 @@ function renderHistory(bills) {
           <strong>${bill.label}</strong>
           ${isLatest ? '<span class="latest-tag">Latest</span>' : ""}
         </td>
-        <td>${bill.previous.toLocaleString("en-BD")}</td>
         <td>${bill.present.toLocaleString("en-BD")}</td>
+        <td>${bill.previous.toLocaleString("en-BD")}</td>
         <td>${bill.total.toLocaleString("en-BD")}</td>
         <td>${formatTaka(bill.bill)}</td>
         <td>${changeCell}</td>
