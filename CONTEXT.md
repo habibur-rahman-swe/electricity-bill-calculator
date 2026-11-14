@@ -25,4 +25,4 @@ Residential electricity bill calculator for Dhaka Power Distribution Company (DP
 
 ## Notes
 - Add a new month by appending an object to `BILLS` in `bills.js`, then refresh and open History.
-- Each record: `year`, `month`, `previous`, `present`, `total`, `bill`.
+- Each record: `year`, `month`, `present`, `total`, `bill`.

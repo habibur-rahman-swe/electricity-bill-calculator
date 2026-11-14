@@ -337,7 +337,6 @@ function normalizeBills(records) {
         monthIndex,
         sortKey: year * 12 + monthIndex,
         label: `${MONTH_SHORT[monthIndex]} ${year}`,
-        previous: Number(row.previous),
         present: Number(row.present),
         total: Number(row.total),
         bill: Number(row.bill),
@@ -522,7 +521,6 @@ function renderHistory(bills) {
           ${isLatest ? '<span class="latest-tag">Latest</span>' : ""}
         </td>
         <td>${bill.present.toLocaleString("en-BD")}</td>
-        <td>${bill.previous.toLocaleString("en-BD")}</td>
         <td>${bill.total.toLocaleString("en-BD")}</td>
         <td>${formatTaka(bill.bill)}</td>
         <td>${changeCell}</td>
