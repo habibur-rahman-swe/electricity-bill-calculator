@@ -133,10 +133,20 @@
               </div>
               <div id="history-stats" class="stat-grid"></div>
               <div class="chart-wrap">
-                <svg id="bill-chart" viewBox="0 0 720 260" role="img" aria-label="Monthly bills and running total"></svg>
+                <div class="chart-head">
+                  <span class="chart-title">Monthly bill vs running total</span>
+                  <span class="chart-units">Hover or tap a bar</span>
+                </div>
+                <div class="chart-canvas">
+                  <div class="chart-inner">
+                    <svg id="bill-chart" viewBox="0 0 760 300" role="img" aria-label="Monthly bills and running total for the last 24 months"></svg>
+                    <div id="chart-tooltip" class="chart-tooltip hidden"></div>
+                  </div>
+                </div>
                 <div class="chart-legend">
-                  <span><i class="swatch bar"></i> Monthly bill</span>
-                  <span><i class="swatch line"></i> Running total</span>
+                  <span><i class="swatch bar"></i> Monthly bill (left axis)</span>
+                  <span><i class="swatch line"></i> Running total (right axis)</span>
+                  <span><i class="swatch avg"></i> Average bill</span>
                 </div>
               </div>
             </section>

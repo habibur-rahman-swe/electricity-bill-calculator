@@ -78,8 +78,10 @@ const historyWindow = document.getElementById("history-window");
 const historySource = document.getElementById("history-source");
 const trendBadge = document.getElementById("trend-badge");
 const billChart = document.getElementById("bill-chart");
+const chartTooltip = document.getElementById("chart-tooltip");
 
 let mode = "forward";
+let chartState = null;
 
 function round(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -100,6 +102,10 @@ function formatUnits(units) {
   return `${units.toLocaleString("en-BD", {
     maximumFractionDigits: 2,
   })} kWh`;
+}
+
+function formatUnitsShort(units) {
+  return `${units.toLocaleString("en-BD", { maximumFractionDigits: 1 })}`;
 }
 
 function renderTariff(activeLabels = []) {
@@ -415,6 +421,19 @@ function renderTrend(windowBills) {
   trendBadge.innerHTML = `<strong>${trend.label}</strong><span>${trend.detail}</span>`;
 }
 
+const NICE_MULTIPLIERS = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+
+function niceScale(maxValue, tickCount) {
+  const safe = Math.max(maxValue, 1);
+  const rough = safe / tickCount;
+  const exponent = Math.floor(Math.log10(rough));
+  const base = Math.pow(10, exponent);
+  const n = rough / base;
+  const mult = NICE_MULTIPLIERS.find((candidate) => n <= candidate) ?? 10;
+  const step = mult * base;
+  return { step, max: step * tickCount };
+}
+
 function chartPath(points) {
   return points
     .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
@@ -422,80 +441,195 @@ function chartPath(points) {
 }
 
 function renderChart(windowBills) {
-  const width = 720;
-  const height = 260;
-  const pad = { top: 24, right: 56, bottom: 42, left: 52 };
+  hideChartTooltip();
+  const width = 760;
+  const height = 300;
+  const pad = { top: 30, right: 66, bottom: 54, left: 66 };
   const innerW = width - pad.left - pad.right;
   const innerH = height - pad.top - pad.bottom;
-  const maxBill = Math.max(...windowBills.map((row) => row.bill), 1);
+  const count = windowBills.length;
+  const baseY = pad.top + innerH;
+
   const running = [];
   windowBills.reduce((sum, row) => {
     const next = sum + row.bill;
     running.push(next);
     return next;
   }, 0);
-  const maxSum = Math.max(...running, 1);
-  const count = windowBills.length;
-  const slot = innerW / Math.max(count, 1);
-  const barW = Math.min(36, slot * 0.55);
 
-  const barPoints = windowBills.map((row, index) => {
+  const billValues = windowBills.map((row) => row.bill);
+  const billScale = niceScale(Math.max(...billValues, 1), 4);
+  const sumScale = niceScale(Math.max(...running, 1), 4);
+  const avg = billValues.reduce((sum, value) => sum + value, 0) / Math.max(count, 1);
+  const peakIndex = billValues.indexOf(Math.max(...billValues));
+
+  const slot = innerW / Math.max(count, 1);
+  const barW = Math.min(34, slot * 0.52);
+
+  const points = windowBills.map((row, index) => {
     const x = pad.left + slot * index + slot / 2;
-    const h = (row.bill / maxBill) * innerH;
-    return { x, y: pad.top + innerH - h, h, label: row.label, bill: row.bill };
+    const h = (row.bill / billScale.max) * innerH;
+    const y = baseY - h;
+    const sumY = baseY - (running[index] / sumScale.max) * innerH;
+    const previous = index > 0 ? windowBills[index - 1].bill : null;
+    const mom = previous ? ((row.bill - previous) / previous) * 100 : null;
+    return { ...row, x, y, h, sumY, running: running[index], mom, index };
   });
 
-  const linePoints = running.map((value, index) => ({
-    x: pad.left + slot * index + slot / 2,
-    y: pad.top + innerH - (value / maxSum) * innerH,
-  }));
-
-  const yTicks = 4;
-  const grid = Array.from({ length: yTicks + 1 }, (_, i) => {
-    const t = i / yTicks;
-    const y = pad.top + innerH * (1 - t);
-    return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y}" y2="${y}" class="grid-line" />
-      <text x="${pad.left - 8}" y="${y + 4}" class="axis-label left">${formatTakaCompact(maxBill * t)}</text>
-      <text x="${width - pad.right + 8}" y="${y + 4}" class="axis-label right">${formatTakaCompact(maxSum * t)}</text>`;
+  const ticks = 4;
+  const grid = Array.from({ length: ticks + 1 }, (_, i) => {
+    const t = i / ticks;
+    const y = baseY - innerH * t;
+    return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="grid-line" />
+      <text x="${pad.left - 10}" y="${(y + 4).toFixed(1)}" class="axis-label left">${formatTakaCompact(billScale.step * i)}</text>
+      <text x="${width - pad.right + 10}" y="${(y + 4).toFixed(1)}" class="axis-label right">${formatTakaCompact(sumScale.step * i)}</text>`;
   }).join("");
 
-  const bars = barPoints
-    .map(
-      (point, index) => `
-      <rect class="bar${index === count - 1 ? " latest" : ""}" x="${(point.x - barW / 2).toFixed(1)}" y="${point.y.toFixed(1)}" width="${barW}" height="${Math.max(point.h, 2).toFixed(1)}" rx="6">
-        <title>${index === count - 1 ? "Latest · " : ""}${point.label}: ${formatTaka(point.bill)}</title>
-      </rect>`
-    )
-    .join("");
-
-  const labelStep = count > 12 ? 3 : count > 8 ? 2 : 1;
-  const labels = barPoints
-    .map((point, index) => {
-      if (index % labelStep !== 0 && index !== count - 1) return "";
-      const latestClass = index === count - 1 ? " latest" : "";
-      return `<text x="${point.x.toFixed(1)}" y="${height - 14}" class="axis-label center${latestClass}">${point.label}</text>`;
+  const bars = points
+    .map((point) => {
+      const latest = point.index === count - 1;
+      const showValue = count <= 10 || latest || point.index === peakIndex;
+      const labelY = Math.max(point.y - 8, pad.top + 10);
+      const valueLabel = showValue
+        ? `<text x="${point.x.toFixed(1)}" y="${labelY.toFixed(1)}" class="bar-value${latest ? " latest" : ""}">${formatTakaCompact(point.bill)}</text>`
+        : "";
+      return `${valueLabel}
+      <rect class="bar${latest ? " latest" : ""}" data-index="${point.index}" x="${(point.x - barW / 2).toFixed(1)}" y="${point.y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(point.h, 2).toFixed(1)}" rx="5">
+        <title>${latest ? "Latest · " : ""}${point.label}: ${formatTaka(point.bill)}</title>
+      </rect>`;
     })
     .join("");
 
-  const area = `${chartPath(linePoints)} L ${linePoints[linePoints.length - 1].x.toFixed(1)} ${pad.top + innerH} L ${linePoints[0].x.toFixed(1)} ${pad.top + innerH} Z`;
+  const labelStep = count > 16 ? 3 : count > 10 ? 2 : 1;
+  const labels = points
+    .map((point) => {
+      const isLast = point.index === count - 1;
+      if (point.index % labelStep !== 0 && !isLast) return "";
+      return `<text x="${point.x.toFixed(1)}" y="${height - 16}" class="axis-label center${isLast ? " latest" : ""}">${point.label}</text>`;
+    })
+    .join("");
+
+  const linePath = chartPath(points.map((point) => ({ x: point.x, y: point.sumY })));
+  const area = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${baseY} L ${points[0].x.toFixed(1)} ${baseY} Z`;
+  const avgY = baseY - (avg / billScale.max) * innerH;
+
+  const hits = points
+    .map(
+      (point) =>
+        `<rect class="hit" data-index="${point.index}" tabindex="0" role="button" aria-label="${point.label}: ${formatTaka(point.bill)}, ${formatUnitsShort(point.total)} kWh" x="${(point.x - slot / 2).toFixed(1)}" y="${pad.top}" width="${slot.toFixed(1)}" height="${innerH}" />`
+    )
+    .join("");
 
   billChart.innerHTML = `
     <defs>
       <linearGradient id="sumFill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#7ee0d0" stop-opacity="0.28" />
+        <stop offset="0%" stop-color="#7ee0d0" stop-opacity="0.30" />
         <stop offset="100%" stop-color="#7ee0d0" stop-opacity="0" />
       </linearGradient>
+      <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffd977" />
+        <stop offset="100%" stop-color="#d99a1f" />
+      </linearGradient>
+      <linearGradient id="barFillLatest" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fff3c4" />
+        <stop offset="100%" stop-color="#f0c14b" />
+      </linearGradient>
     </defs>
+    <text x="${pad.left}" y="${pad.top - 12}" class="axis-title left">Monthly bill (৳)</text>
+    <text x="${width - pad.right}" y="${pad.top - 12}" class="axis-title right">Running total (৳)</text>
     ${grid}
     <path d="${area}" class="sum-area" />
+    <line x1="${pad.left}" x2="${width - pad.right}" y1="${avgY.toFixed(1)}" y2="${avgY.toFixed(1)}" class="avg-line" />
+    <text x="${(pad.left + 8).toFixed(1)}" y="${(avgY - 7).toFixed(1)}" class="avg-label">Avg ${formatTakaCompact(avg)}</text>
     ${bars}
-    <path d="${chartPath(linePoints)}" class="sum-line" />
-    ${linePoints
-      .map((point) => `<circle class="sum-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.5" />`)
+    <path d="${linePath}" class="sum-line" />
+    ${points
+      .map(
+        (point) =>
+          `<circle class="sum-dot${point.index === count - 1 ? " latest" : ""}" cx="${point.x.toFixed(1)}" cy="${point.sumY.toFixed(1)}" r="${point.index === count - 1 ? 4.5 : 3.2}" />`
+      )
       .join("")}
     ${labels}
+    <line id="chart-cursor" class="cursor-line hidden" x1="0" x2="0" y1="${pad.top}" y2="${baseY}" />
+    ${hits}
   `;
+
+  chartState = { points, width, height, pad, innerH, baseY, count };
 }
+
+function hideChartTooltip() {
+  chartTooltip.classList.add("hidden");
+  const cursor = document.getElementById("chart-cursor");
+  if (cursor) cursor.classList.add("hidden");
+  billChart.querySelectorAll(".bar.hover").forEach((bar) => bar.classList.remove("hover"));
+}
+
+function showChartTooltip(index) {
+  if (!chartState || !chartState.points[index]) return;
+  const point = chartState.points[index];
+  const cursor = document.getElementById("chart-cursor");
+  if (cursor) {
+    cursor.setAttribute("x1", point.x.toFixed(1));
+    cursor.setAttribute("x2", point.x.toFixed(1));
+    cursor.classList.remove("hidden");
+  }
+
+  billChart.querySelectorAll(".bar.hover").forEach((bar) => bar.classList.remove("hover"));
+  const activeBar = billChart.querySelector(`.bar[data-index="${index}"]`);
+  if (activeBar) activeBar.classList.add("hover");
+
+  const momText =
+    point.mom == null
+      ? "First month in view"
+      : `${point.mom > 0 ? "+" : ""}${point.mom.toFixed(1)}% vs previous month`;
+  const momTone = point.mom == null ? "" : point.mom > 0 ? "up" : point.mom < 0 ? "down" : "";
+
+  chartTooltip.innerHTML = `
+    <p class="tip-title">${point.label}</p>
+    <p class="tip-row"><span>Bill</span><strong>${formatTaka(point.bill)}</strong></p>
+    <p class="tip-row"><span>Units</span><strong>${formatUnitsShort(point.total)} kWh</strong></p>
+    <p class="tip-row"><span>Running total</span><strong>${formatTaka(point.running)}</strong></p>
+    <p class="tip-note ${momTone}">${momText}</p>
+  `;
+  chartTooltip.classList.remove("hidden");
+
+  const canvas = billChart.parentElement;
+  const canvasRect = canvas.getBoundingClientRect();
+  const tipRect = chartTooltip.getBoundingClientRect();
+  const anchorX = (point.x / chartState.width) * canvasRect.width;
+  const anchorY = (Math.min(point.y, point.sumY) / chartState.height) * canvasRect.height;
+  const flip = anchorX > canvasRect.width * 0.58;
+  const rawLeft = flip ? anchorX - tipRect.width - 14 : anchorX + 14;
+  const left = Math.max(6, Math.min(rawLeft, canvasRect.width - tipRect.width - 6));
+  const top = Math.max(6, Math.min(anchorY - tipRect.height / 2, canvasRect.height - tipRect.height - 6));
+
+  chartTooltip.style.left = `${left.toFixed(1)}px`;
+  chartTooltip.style.top = `${top.toFixed(1)}px`;
+  chartTooltip.style.transform = "none";
+}
+
+billChart.addEventListener("pointermove", (event) => {
+  const target = event.target.closest("[data-index]");
+  if (!target) {
+    hideChartTooltip();
+    return;
+  }
+  showChartTooltip(Number(target.dataset.index));
+});
+
+billChart.addEventListener("pointerdown", (event) => {
+  const target = event.target.closest("[data-index]");
+  if (target) showChartTooltip(Number(target.dataset.index));
+});
+
+billChart.addEventListener("pointerleave", hideChartTooltip);
+billChart.addEventListener("focusin", (event) => {
+  const target = event.target.closest("[data-index]");
+  if (target) showChartTooltip(Number(target.dataset.index));
+});
+billChart.addEventListener("focusout", hideChartTooltip);
+window.addEventListener("resize", hideChartTooltip);
+window.addEventListener("scroll", hideChartTooltip, { passive: true });
 
 function renderHistory(bills) {
   const windowBills = last24Months(bills);
@@ -541,6 +675,8 @@ function loadBills() {
   historyEmpty.classList.add("hidden");
   historyBody.innerHTML = "";
   billChart.innerHTML = "";
+  chartTooltip.classList.add("hidden");
+  chartState = null;
   historyStats.innerHTML = "";
   trendBadge.classList.add("hidden");
 
