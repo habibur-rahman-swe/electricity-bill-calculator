@@ -1,7 +1,7 @@
 const VAT_RATE = 0.05;
 const DEMAND_RATE = 42;
 const SANCTIONED_KW = 2;
-const DEMAND_CHARGE = DEMAND_RATE * SANCTIONED_KW;
+const DEMAND_CHARGE = Math.ceil(SANCTIONED_KW) * DEMAND_RATE;
 
 const SLABS = [
   { label: "0–50 units (Lifeline)", from: 0, to: 50, rate: 4.63, lifeline: true },
@@ -17,11 +17,11 @@ const HISTORY_LEDE =
 
 const COPY = {
   forward: {
-    lede: "Enter monthly units (kWh) to see a slab-by-slab DPDC LT-A estimate, plus the ৳84 demand charge and 5% VAT.",
+    lede: "Enter monthly units (kWh) to see a slab-by-slab DPDC LT-A estimate, plus the demand charge and 5% VAT.",
     label: "Monthly consumption",
     suffix: "kWh",
     placeholder: "e.g. 185",
-    hint: "Lifeline (৳4.63) applies only if you use <strong>50 units or less</strong>. Above that, billing starts from the 0–75 slab. Demand charge is ৳84 for a 2 kW connection.",
+    hint: "Lifeline (৳4.63) applies only if you use <strong>50 units or less</strong>. Above that, billing starts from the 0–75 slab. Demand charge is ceil(kW) × ৳42.",
     empty: "Type your units to see the bill breakdown.",
     resultLabel: "Estimated payable",
   },
@@ -30,7 +30,7 @@ const COPY = {
     label: "Total bill (with VAT)",
     suffix: "৳",
     placeholder: "e.g. 1850",
-    hint: "VAT is removed first, then the ৳84 demand charge, then usage is worked backwards through the residential slabs.",
+    hint: "VAT is removed first, then the demand charge, then usage is worked backwards through the residential slabs.",
     empty: "Type the payable amount to estimate usage.",
     resultLabel: "Estimated usage",
   },
